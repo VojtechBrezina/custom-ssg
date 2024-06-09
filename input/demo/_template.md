@@ -1,7 +1,0 @@
-Demo:
-
-* [Lists](lists)
-
----
-
-{{content}}
