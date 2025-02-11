@@ -112,7 +112,7 @@ class Document:
         for child in self.children:
             child.write()
 
-        if self.tree is None or "draft" in self.metadata:
+        if self.tree is None:
             return
 
         result = b"<!DOCTYPE html>" + html5lib.serialize(

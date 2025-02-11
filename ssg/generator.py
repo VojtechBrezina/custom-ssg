@@ -76,7 +76,7 @@ class Generator:
                 else:
                     print(f"Warning: Ignored irregular file {item}.")
 
-                if child is not None and "draft" not in child.metadata:
+                if child is not None:
                     child.parent = result
                     result.children.append(child)
 
