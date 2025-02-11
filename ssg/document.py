@@ -12,6 +12,7 @@ class Document:
     """A fully built document with all the metadata resolved."""
 
     QUOTES = {"en-US": "\u201C\u201D", "cs-CZ": "\u201E\u201C"}
+    RAW_ELEMENTS = ("script", "style", "code")
 
     def __init__(
         self,
@@ -91,7 +92,6 @@ class Document:
             return absolute_path
         if not absolute_path.startswith("/"):
             return absolute_path
-        absolute_path = absolute_path.removeprefix("/")
 
         split_result = absolute_path.split("#", 1)
         if len(split_result) == 2:
@@ -103,7 +103,7 @@ class Document:
             absolute_path = absolute_path.removesuffix(".md") + ".html"
 
         relative_path = os.path.relpath(
-            os.path.join(self.output_dir, absolute_path),
+            os.path.join(self.output_dir, absolute_path.removeprefix("/")),
             os.path.dirname(self.dest_path),
         )
         result = ""
@@ -167,8 +167,10 @@ class Document:
                 .replace("...", "\u2026")
             )
 
-        def resolve_quotes(text: str, inside_quotes: bool) -> tuple[str, bool]:
-            if lang is None or element.tag in ("script", "style"):
+        def resolve_quotes(
+            text: str, inside_quotes: bool, /, tail: bool = False
+        ) -> tuple[str, bool]:
+            if lang is None or (not tail and element.tag in Document.RAW_ELEMENTS):
                 return text, inside_quotes
             result = ""
             for i, c in enumerate(text):
@@ -179,7 +181,7 @@ class Document:
                     result += c
             return result, inside_quotes
 
-        if element.text is not None:
+        if element.text is not None and element.tag not in Document.RAW_ELEMENTS:
             element.text, inside_quotes = resolve_quotes(
                 filter(element.text), inside_quotes
             )
@@ -189,5 +191,5 @@ class Document:
 
         if element.tail is not None:
             element.tail, inside_quotes = resolve_quotes(
-                filter(element.tail), inside_quotes
+                filter(element.tail), inside_quotes, tail=True
             )

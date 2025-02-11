@@ -37,16 +37,25 @@ class ParsedFragment:
     def _convert_markdown(self, source: str) -> str:
         """Invoke pandoc on markdown source."""
         result = subprocess.run(
-            ["pandoc", "-f", "markdown-smart", "-t", "html"],
+            [
+                "pandoc",
+                "-f",
+                "markdown-smart+tex_math_dollars",
+                "-t",
+                "html",
+                "--mathml",
+            ],
             capture_output=True,
             check=False,
             encoding="UTF-8",
             input=source,
         )
 
+        print(result.stderr, file=sys.stderr, end="")
+
         if result.returncode != 0:
             print(
-                f"Pandoc failure:\n{result.stderr}",
+                f"Pandoc failed.",
                 file=sys.stderr,
             )
             output = f"<code><pre>{html.escape(result.stderr, True)}<pre></code>"
