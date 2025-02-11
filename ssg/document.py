@@ -28,6 +28,7 @@ class Document:
         self.metadata = metadata
         self.tree = tree
         self.children: list[Document] = []
+        self.parent = None
 
         if self.tree is not None:
             Document._apply_ligatures(self.tree.getroot())

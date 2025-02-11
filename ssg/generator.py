@@ -77,6 +77,7 @@ class Generator:
                     print(f"Warning: Ignored irregular file {item}.")
 
                 if child is not None and "draft" not in child.metadata:
+                    child.parent = result
                     result.children.append(child)
 
         return result
@@ -189,6 +190,11 @@ class Generator:
                         script_element.set("data-inherit", ".//head")
                     else:
                         script_element.set("data-inherit", script["data-inherit"])
+
+            for meta_name, meta_content in fragment.metadata.get("meta", {}).items():
+                meta_element = ET.SubElement(head, "meta")
+                meta_element.set("name", meta_name)
+                meta_element.set("content", meta_content)
 
         print()
         return Document(
