@@ -77,6 +77,7 @@ class Document:
         for parent in self.tree.findall('.//script[@type="text/python"]/..'):
             for script in parent.findall('./script[@type="text/python"]'):
                 parent.remove(script)
+
         for child in self.children:
             child.finalize()
 
@@ -88,6 +89,15 @@ class Document:
 
         if absolute_path.startswith("http://") or absolute_path.startswith("https://"):
             return absolute_path
+        if not absolute_path.startswith("/"):
+            return absolute_path
+        absolute_path = absolute_path.removeprefix("/")
+
+        split_result = absolute_path.split("#", 1)
+        if len(split_result) == 2:
+            absolute_path, fragment = split_result
+        else:
+            fragment = None
 
         if absolute_path.endswith(".md"):
             absolute_path = absolute_path.removesuffix(".md") + ".html"
@@ -105,6 +115,8 @@ class Document:
             else:
                 result = basename + "/" + result
 
+        if fragment is not None:
+            return "#".join((result, fragment))
         return result
 
     def write(self):

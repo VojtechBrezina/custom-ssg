@@ -156,7 +156,8 @@ class Generator:
                 if "href" in link:
                     link_element.set(
                         "href",
-                        self.asset_manager.translate(
+                        "/"
+                        + self.asset_manager.translate(
                             os.path.join(os.path.dirname(source), link["href"]),
                         ),
                     )
@@ -175,12 +176,13 @@ class Generator:
                     if script.get("type", None) == "text/python":
                         script_element.set(
                             "src",
-                            os.path.join(os.path.dirname(source), script.get("src")),
+                            os.path.join(os.path.dirname(source), script["src"]),
                         )
                     else:
                         script_element.set(
                             "src",
-                            self.asset_manager.translate(
+                            "/"
+                            + self.asset_manager.translate(
                                 os.path.join(os.path.dirname(source), script["src"]),
                             ),
                         )
