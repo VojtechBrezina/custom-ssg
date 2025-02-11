@@ -11,6 +11,8 @@ import html5lib
 class Document:
     """A fully built document with all the metadata resolved."""
 
+    QUOTES = {"en-US": "\u201C\u201D", "cs-CZ": "\u201E\u201C"}
+
     def __init__(
         self,
         /,
@@ -128,7 +130,24 @@ class Document:
             f.write(result.decode("UTF-8"))
 
     @staticmethod
-    def _apply_ligatures(element: ET.Element) -> None:
+    def _apply_ligatures(
+        element: ET.Element,
+        /,
+        inside_quotes: bool = False,
+        lang: str | None = None,
+    ) -> None:
+        if "lang" in element.attrib:
+            if inside_quotes and element.get("lang") != lang:
+                print(
+                    'Error: unmatched " character. Conversion will break.',
+                    file=sys.stderr,
+                )
+                inside_quotes = False
+            lang = element.get("lang")
+
+        if lang is None:
+            print("Warning: unset language. Quotes will be left alone.")
+
         def filter(text: str) -> str:
             return (
                 text.replace("---", "\u2014")
@@ -136,11 +155,27 @@ class Document:
                 .replace("...", "\u2026")
             )
 
-        if element.text is not None:
-            element.text = filter(element.text)
+        def resolve_quotes(text: str, inside_quotes: bool) -> tuple[str, bool]:
+            if lang is None or element.tag in ("script", "style"):
+                return text, inside_quotes
+            result = ""
+            for i, c in enumerate(text):
+                if c == '"':
+                    result += Document.QUOTES[lang][1 if inside_quotes else 0]
+                    inside_quotes = not inside_quotes
+                else:
+                    result += c
+            return result, inside_quotes
 
-        if element.tail is not None:
-            element.tail = filter(element.tail)
+        if element.text is not None:
+            element.text, inside_quotes = resolve_quotes(
+                filter(element.text), inside_quotes
+            )
 
         for child in element.findall("./*"):
-            Document._apply_ligatures(child)
+            Document._apply_ligatures(child, lang=lang, inside_quotes=inside_quotes)
+
+        if element.tail is not None:
+            element.tail, inside_quotes = resolve_quotes(
+                filter(element.tail), inside_quotes
+            )

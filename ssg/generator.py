@@ -92,14 +92,13 @@ class Generator:
             source = f.read()
         return ParsedFragment(source)
 
-    @staticmethod
-    def _create_empty_document() -> ET.ElementTree:
+    def _create_empty_document(self) -> ET.ElementTree:
         """Create an empty document node to insert generated content into."""
         return ET.ElementTree(
             html5lib.parse(
-                """
+                f"""
                 <!DOCTYPE html>
-                <html>
+                <html lang={self.site_lang}>
                     <head></head>
                     <body><main><article></article></main></body>
                 </html>
@@ -121,7 +120,7 @@ class Generator:
         document = None
 
         if fragment is not None:
-            document = Generator._create_empty_document()
+            document = self._create_empty_document()
 
             if self.site_lang is not None:
                 document.getroot().set("lang", self.site_lang)
